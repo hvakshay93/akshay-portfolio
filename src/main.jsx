@@ -5,7 +5,7 @@ import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
   Cloud, Server, Workflow, ShieldCheck, Database, Terminal, GitBranch,
   Layers3, Activity, ExternalLink, CheckCircle2, Code2, Cpu, HardDrive,
-  Network, Gauge, ChevronRight, MousePointer2
+  Network, Gauge, ChevronRight
 } from 'lucide-react'
 import './styles.css'
 
@@ -200,334 +200,14 @@ function SwarmPortrait() {
       <div className="portrait-scanline" />
       <div className="portrait-caption"><span>AKSHAY RANGANATH H V</span><span>PROFILE / 001</span></div>
       <button className="rebuild-button" onClick={() => setRebuildKey(key => key + 1)} type="button">
-        <Workflow size={13} /> REBUILD PORTRAIT
+        <Workflow size={13} /> REBUILD WITH SWARM
       </button>
-    </div>
-  )
-}
-
-
-const SWARM_PALETTE = [
-  '#31d7cb', '#f2c94c', '#a987ff', '#ff8c68', '#61b9ff', '#f16da9', '#77e0a3',
-  '#e8a3ff', '#ffb454', '#6ce0e8', '#d2e86c', '#ff758f', '#8fa8ff', '#f5a4d4',
-  '#7ce0c1', '#ff9f43', '#8ed3ff', '#c49bff', '#f6d365', '#62e5a7', '#ff7d63',
-  '#72c9ff', '#df8cff', '#9be071', '#ffb2a0', '#68dfd0', '#f2a1ed', '#9caeff',
-]
-
-const SWARM_DURATION_MS = 49700
-
-function getSwarmAgentCount(progress) {
-  const milestones = [
-    [0, 1], [.16, 18], [.32, 19], [.5, 23], [.7, 26], [.9, 28], [1, 28],
-  ]
-  for (let index = 1; index < milestones.length; index += 1) {
-    const [rightProgress, rightCount] = milestones[index]
-    const [leftProgress, leftCount] = milestones[index - 1]
-    if (progress <= rightProgress) {
-      const portion = (progress - leftProgress) / (rightProgress - leftProgress)
-      return Math.max(1, Math.round(leftCount + (rightCount - leftCount) * portion))
-    }
-  }
-  return 28
-}
-
-function drawCursor(ctx, x, y, color, size = 17) {
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.shadowColor = color
-  ctx.shadowBlur = 9
-  ctx.beginPath()
-  ctx.moveTo(0, 0)
-  ctx.lineTo(0, size)
-  ctx.lineTo(size * .29, size * .7)
-  ctx.lineTo(size * .52, size * 1.12)
-  ctx.lineTo(size * .72, size * 1.02)
-  ctx.lineTo(size * .5, size * .61)
-  ctx.lineTo(size * .92, size * .58)
-  ctx.closePath()
-  ctx.fillStyle = color
-  ctx.fill()
-  ctx.shadowBlur = 0
-  ctx.lineWidth = 1.25
-  ctx.strokeStyle = '#f7fbff'
-  ctx.stroke()
-  ctx.restore()
-}
-
-function SwarmRebuildOverlay({ onClose }) {
-  const canvasRef = React.useRef(null)
-  const speedRef = React.useRef(1)
-  const [speed, setSpeed] = React.useState(1)
-  const [runId, setRunId] = React.useState(0)
-  const [phase, setPhase] = React.useState('touring')
-  const [stats, setStats] = React.useState({ progress: 0, done: 0, total: 0, agents: 1, seconds: 0 })
-
-  React.useEffect(() => { speedRef.current = speed }, [speed])
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas?.getContext('2d')
-    if (!canvas || !ctx) return undefined
-
-    setPhase('touring')
-    setStats({ progress: 0, done: 0, total: 0, agents: 1, seconds: 0 })
-    window.scrollTo(0, 0)
-
-    const excludedTags = new Set(['SCRIPT', 'STYLE', 'SVG', 'PATH', 'CANVAS', 'NOSCRIPT'])
-    const collectLayers = () => {
-      const elements = Array.from(document.querySelectorAll('.site-shell *'))
-      const usable = elements.filter(element => {
-        if (excludedTags.has(element.tagName)) return false
-        if (element.closest('.swarm-rebuild-overlay')) return false
-        if (element.closest('.swarm-portrait canvas')) return false
-        const style = window.getComputedStyle(element)
-        if (style.display === 'none' || style.visibility === 'hidden') return false
-        const rect = element.getBoundingClientRect()
-        if (rect.width < 18 || rect.height < 9) return false
-        if (rect.width > window.innerWidth * .97 && rect.height > window.innerHeight * .72) return false
-        return true
-      })
-      usable.sort((a, b) => {
-        const ar = a.getBoundingClientRect()
-        const br = b.getBoundingClientRect()
-        const ay = ar.top + window.scrollY
-        const by = br.top + window.scrollY
-        if (Math.abs(ay - by) > 3) return ay - by
-        if (Math.abs(ar.left - br.left) > 3) return ar.left - br.left
-        return (br.width * br.height) - (ar.width * ar.height)
-      })
-      return usable.slice(0, 320)
-    }
-
-    const layers = collectLayers()
-    const totalLayers = Math.max(1, layers.length)
-    setStats(current => ({ ...current, total: totalLayers }))
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const resizeCanvas = () => {
-      canvas.width = Math.round(window.innerWidth * dpr)
-      canvas.height = Math.round(window.innerHeight * dpr)
-      canvas.style.width = `${window.innerWidth}px`
-      canvas.style.height = `${window.innerHeight}px`
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    }
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
-
-    const starField = Array.from({ length: 44 }, (_, index) => ({
-      x: ((index * 173 + 29) % 997) / 997,
-      y: ((index * 313 + 71) % 991) / 991,
-      size: 1.2 + (index % 4) * .45,
-      color: SWARM_PALETTE[index % SWARM_PALETTE.length],
-      phase: index * .71,
-    }))
-    const trails = SWARM_PALETTE.map(() => [])
-    const rectCache = new Array(totalLayers)
-    const startedAt = performance.now()
-    let elapsed = 0
-    let previousFrame = startedAt
-    let lastUiUpdate = 0
-    let lastRectUpdate = 0
-    let animationFrame = 0
-    let complete = false
-
-    const drawSelection = (rect, index, color, selected = false) => {
-      if (!rect || rect.bottom < -30 || rect.top > window.innerHeight + 30 || rect.right < -20 || rect.left > window.innerWidth + 20) return
-      const x = Math.max(0, rect.left - 2)
-      const y = Math.max(0, rect.top - 2)
-      const w = Math.min(window.innerWidth - x, rect.width + 4)
-      const h = Math.min(window.innerHeight - y, rect.height + 4)
-      ctx.save()
-      ctx.strokeStyle = color
-      ctx.lineWidth = selected ? 1.3 : .8
-      ctx.globalAlpha = selected ? .95 : .72
-      ctx.strokeRect(x, y, w, h)
-      if (selected) {
-        const handle = 5
-        ctx.fillStyle = '#eaf7ff'
-        ;[[x, y], [x + w, y], [x, y + h], [x + w, y + h]].forEach(([hx, hy]) => {
-          ctx.fillRect(hx - handle / 2, hy - handle / 2, handle, handle)
-        })
-        const label = `${Math.round(rect.width)} × ${Math.round(rect.height)}`
-        ctx.font = '10px "DM Mono", monospace'
-        const labelWidth = ctx.measureText(label).width + 12
-        const labelY = Math.min(window.innerHeight - 20, y + h + 7)
-        ctx.fillStyle = '#168de0'
-        ctx.fillRect(x, labelY, labelWidth, 17)
-        ctx.fillStyle = '#fff'
-        ctx.fillText(label, x + 6, labelY + 12)
-      }
-      ctx.restore()
-    }
-
-    const draw = (progress, done, agents, now) => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      ctx.clearRect(0, 0, width, height)
-      ctx.fillStyle = '#05080f'
-      ctx.fillRect(0, 0, width, height)
-
-      ctx.globalCompositeOperation = 'destination-out'
-      for (let index = 0; index < done; index += 1) {
-        const rect = rectCache[index]
-        if (!rect || rect.bottom < 0 || rect.top > height || rect.right < 0 || rect.left > width) continue
-        const pad = rect.width > width * .8 ? 2 : 4
-        ctx.clearRect(rect.left - pad, rect.top - pad, rect.width + pad * 2, rect.height + pad * 2)
-      }
-      ctx.globalCompositeOperation = 'source-over'
-
-      const elapsedSeconds = now / 1000
-      starField.forEach(star => {
-        const pulse = .3 + .55 * (Math.sin(elapsedSeconds * .8 + star.phase) * .5 + .5)
-        const sx = star.x * width
-        const sy = star.y * height
-        ctx.globalAlpha = pulse * (progress > .94 ? .6 : .34)
-        ctx.strokeStyle = star.color
-        ctx.lineWidth = 1
-        ctx.beginPath(); ctx.moveTo(sx - star.size, sy); ctx.lineTo(sx + star.size, sy)
-        ctx.moveTo(sx, sy - star.size); ctx.lineTo(sx, sy + star.size); ctx.stroke()
-      })
-      ctx.globalAlpha = 1
-
-      const activeIndices = []
-      const futureRange = Math.max(1, Math.min(34, totalLayers - done))
-      for (let index = 0; index < Math.min(agents, 10); index += 1) {
-        const targetIndex = Math.min(totalLayers - 1, done + Math.floor((index / Math.max(1, Math.min(agents, 10))) * futureRange))
-        if (targetIndex >= done && !activeIndices.includes(targetIndex)) activeIndices.push(targetIndex)
-      }
-      activeIndices.forEach((targetIndex, index) => {
-        const rect = rectCache[targetIndex]
-        drawSelection(rect, targetIndex, index % 4 === 0 ? '#37baff' : '#ff665f', index === 0)
-      })
-
-      for (let index = 0; index < agents; index += 1) {
-        const targetIndex = Math.min(totalLayers - 1, done + Math.floor((index / Math.max(1, agents)) * futureRange))
-        let rect = rectCache[targetIndex]
-        if (!rect || rect.bottom < -40 || rect.top > height + 40) {
-          const visible = rectCache.find(candidate => candidate && candidate.bottom > 0 && candidate.top < height)
-          rect = visible || { left: width * .15, top: height * .2, width: width * .7, height: height * .5 }
-        }
-        const wave = elapsedSeconds * (1.15 + (index % 5) * .08) + index * 1.7
-        const x = Math.max(5, Math.min(width - 18, rect.left + rect.width * (.18 + .64 * (.5 + .5 * Math.sin(wave)))))
-        const y = Math.max(5, Math.min(height - 26, rect.top + rect.height * (.18 + .64 * (.5 + .5 * Math.cos(wave * .83)))))
-        const color = SWARM_PALETTE[index % SWARM_PALETTE.length]
-        const trail = trails[index]
-        trail.push({ x, y })
-        if (trail.length > 6) trail.shift()
-        if (trail.length > 1) {
-          ctx.save()
-          ctx.beginPath()
-          trail.forEach((point, pointIndex) => pointIndex === 0 ? ctx.moveTo(point.x + 7, point.y + 8) : ctx.lineTo(point.x + 7, point.y + 8))
-          ctx.strokeStyle = color
-          ctx.globalAlpha = .19
-          ctx.lineWidth = 1.2
-          ctx.stroke()
-          ctx.restore()
-        }
-        drawCursor(ctx, x, y, color, 15)
-      }
-    }
-
-    const tick = (now) => {
-      if (complete) return
-      const delta = Math.min(50, Math.max(0, now - previousFrame))
-      previousFrame = now
-      elapsed += delta * speedRef.current
-      const progress = Math.min(1, elapsed / SWARM_DURATION_MS)
-      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
-      window.scrollTo(0, maxScroll * progress)
-      const done = Math.min(totalLayers, Math.floor(progress * totalLayers))
-      const agents = getSwarmAgentCount(progress)
-
-      if (now - lastRectUpdate > 100 || progress === 1) {
-        lastRectUpdate = now
-        layers.forEach((element, index) => {
-          const rect = element.getBoundingClientRect()
-          rectCache[index] = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height }
-        })
-      }
-      draw(progress, done, agents, elapsed)
-
-      if (now - lastUiUpdate > 110 || progress === 1) {
-        lastUiUpdate = now
-        setStats({ progress, done, total: totalLayers, agents, seconds: (now - startedAt) / 1000 })
-      }
-
-      if (progress < 1) {
-        animationFrame = requestAnimationFrame(tick)
-      } else {
-        complete = true
-        setPhase('complete')
-        setStats({ progress: 1, done: totalLayers, total: totalLayers, agents: 28, seconds: (now - startedAt) / 1000 })
-        ctx.clearRect(0, 0, width, height)
-      }
-    }
-
-    animationFrame = requestAnimationFrame(tick)
-    return () => {
-      complete = true
-      cancelAnimationFrame(animationFrame)
-      window.removeEventListener('resize', resizeCanvas)
-    }
-  }, [runId])
-
-  const replay = () => {
-    setSpeed(1)
-    speedRef.current = 1
-    setRunId(id => id + 1)
-  }
-
-  const elapsedLabel = `${stats.seconds.toFixed(1)}s`
-  const agentDots = Math.min(5, stats.agents)
-
-  return (
-    <div className={`swarm-rebuild-overlay ${phase === 'complete' ? 'swarm-complete' : ''}`} aria-label="Multiplayer cursor swarm page rebuild">
-      <canvas ref={canvasRef} className="swarm-rebuild-canvas" aria-hidden="true" />
-      <div className="swarm-toolbar" role="status" aria-live="polite">
-        <div className="swarm-toolbar-agents" aria-hidden="true">
-          {Array.from({ length: agentDots }, (_, index) => (
-            <span key={index} style={{ '--agent-color': SWARM_PALETTE[index] }}>{['A', 'T', 'W', 'O', 'S'][index]}</span>
-          ))}
-        </div>
-        {phase === 'touring' ? (
-          <>
-            <strong className="swarm-agent-count">{stats.agents} agents</strong>
-            <span className="swarm-layer-count">{stats.done} / {stats.total || '…'} layers</span>
-            <div className="swarm-toolbar-progress"><span style={{ width: `${stats.progress * 100}%` }} /></div>
-            <span className="swarm-tour-status">Touring</span>
-            <button className="swarm-speed" type="button" onClick={() => setSpeed(value => value === 1 ? 2 : 1)} aria-label="Change tour speed">{speed}×</button>
-            <button className="swarm-close" type="button" onClick={onClose} aria-label="Close rebuild tour"><X size={15} /></button>
-          </>
-        ) : (
-          <>
-            <strong className="swarm-finished-label">Rebuilt by 28 agents in {elapsedLabel}</strong>
-            <div className="swarm-toolbar-progress finished"><span /></div>
-            <button className="swarm-go-live" type="button" onClick={onClose}>Go live</button>
-            <button className="swarm-replay" type="button" onClick={replay}>Replay</button>
-            <button className="swarm-close" type="button" onClick={onClose} aria-label="Close rebuild tour"><X size={15} /></button>
-          </>
-        )}
-      </div>
     </div>
   )
 }
 
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false)
-  const [swarmRunId, setSwarmRunId] = React.useState(0)
-  const [swarmActive, setSwarmActive] = React.useState(false)
-  const startSwarmRebuild = React.useCallback(() => {
-    setSwarmRunId(id => id + 1)
-    setSwarmActive(true)
-  }, [])
-  const finishSwarmRebuild = React.useCallback(() => setSwarmActive(false), [])
-
-  React.useEffect(() => {
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduceMotion) return undefined
-    const timer = window.setTimeout(startSwarmRebuild, 850)
-    return () => window.clearTimeout(timer)
-  }, [startSwarmRebuild])
   const closeMenu = () => setMenuOpen(false)
   const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Contact', '#contact']]
 
@@ -566,7 +246,6 @@ function App() {
             <motion.div className="hero-actions" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .6 }}>
               <a className="button button-primary" href="#projects">Explore my work <ArrowUpRight size={17} /></a>
               <a className="button button-ghost" href="#contact">Get in touch <Mail size={16} /></a>
-              <button className="button button-swarm" type="button" onClick={startSwarmRebuild}><MousePointer2 size={16} /> Watch swarm tour</button>
             </motion.div>
             <motion.div className="hero-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .8 }}>
               <span><MapPin size={14} /> India</span>
@@ -693,7 +372,6 @@ function App() {
         <span>© {new Date().getFullYear()} {profile.name}. Built with intent.</span>
         <a href="#home" className="back-top">BACK TO TOP ↑</a>
       </footer>
-      {swarmActive && <SwarmRebuildOverlay key={swarmRunId} onClose={finishSwarmRebuild} />}
     </div>
   )
 }
