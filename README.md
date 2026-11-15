@@ -51,3 +51,7 @@ The supplied profile photo is stored at `public/akshay-profile.jpg`. The hero in
 ## Multiplayer cursor swarm effect
 
 The homepage runs a short page-rebuild intro on first load (unless reduced motion is enabled). Multiple labelled cursor agents sweep across a tiled mask, clearing tiles to reveal the actual webpage beneath. Use **Watch swarm rebuild** in the hero section to replay the effect. This is a local visual simulation; it does not represent real multiplayer users or live network collaboration.
+
+## Multiplayer cursor swarm tour
+
+The homepage runs a roughly 50-second visual rebuild tour. It starts on a dark canvas, then coloured cursor agents reveal actual DOM elements in sequence while the page scrolls from the hero through the contact section. The bottom toolbar shows the active agent count and completed layer count. Visitors can switch to 2× speed, close the tour, replay it, or choose Go live when it finishes. This is a client-side visual simulation, not a real multi-user session or an AI-driven website reconstruction service.
