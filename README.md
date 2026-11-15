@@ -1,4 +1,4 @@
-# Akshay Ranganath H V — Portfolio
+# Akshay Ranganath H V — Portfolio 
 
 A responsive Cloud & DevOps Engineer portfolio built with React, Vite, Tailwind CSS and Framer Motion.
 
