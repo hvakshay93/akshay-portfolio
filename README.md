@@ -43,3 +43,7 @@ The Vite base path is set to `./`, so assets work on both user/organization and 
 - Framer Motion
 - Lucide React icons
 - GitHub Actions + GitHub Pages
+
+## Personal portrait effect
+
+The supplied profile photo is stored at `public/akshay-profile.jpg`. The hero includes a canvas-based particle swarm reconstruction animation. Use the **REBUILD WITH SWARM** control to replay it.
