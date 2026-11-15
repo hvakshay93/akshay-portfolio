@@ -5,7 +5,7 @@ import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
   Cloud, Server, Workflow, ShieldCheck, Database, Terminal, GitBranch,
   Layers3, Activity, ExternalLink, CheckCircle2, Code2, Cpu, HardDrive,
-  Network, Gauge, ChevronRight
+  Network, Gauge, ChevronRight, MousePointer2
 } from 'lucide-react'
 import './styles.css'
 
@@ -200,14 +200,152 @@ function SwarmPortrait() {
       <div className="portrait-scanline" />
       <div className="portrait-caption"><span>AKSHAY RANGANATH H V</span><span>PROFILE / 001</span></div>
       <button className="rebuild-button" onClick={() => setRebuildKey(key => key + 1)} type="button">
-        <Workflow size={13} /> REBUILD WITH SWARM
+        <Workflow size={13} /> REBUILD PORTRAIT
       </button>
+    </div>
+  )
+}
+
+
+const SWARM_AGENTS = [
+  { name: 'AKSHAY', color: '#8ea8ff' },
+  { name: 'TERRAFORM', color: '#74e7c5' },
+  { name: 'AWS-BOT', color: '#d2a7ff' },
+  { name: 'ORCHESTRATOR', color: '#ffbd83' },
+  { name: 'SRE-01', color: '#ff91b7' },
+]
+
+function SwarmRebuildOverlay({ onComplete }) {
+  const [layout, setLayout] = React.useState(null)
+  const [cursorPositions, setCursorPositions] = React.useState([])
+  const [progress, setProgress] = React.useState(0)
+
+  React.useEffect(() => {
+    const width = window.innerWidth
+    const height = window.innerHeight
+    const columns = Math.max(7, Math.ceil(width / 118))
+    const rows = Math.max(5, Math.ceil(height / 88))
+    const totalCells = columns * rows
+    const stepMs = Math.min(24, 2600 / totalCells)
+    const cellWidth = width / columns
+    const cellHeight = height / rows
+    const cells = Array.from({ length: totalCells }, (_, index) => ({
+      index,
+      column: index % columns,
+      row: Math.floor(index / columns),
+      x: (index % columns + 0.5) * cellWidth,
+      y: (Math.floor(index / columns) + 0.5) * cellHeight,
+    }))
+    const paths = SWARM_AGENTS.map((_, agentIndex) => cells.filter(cell => cell.index % SWARM_AGENTS.length === agentIndex))
+    const duration = totalCells * stepMs + 620
+    const initialPositions = paths.map((path, index) => path[0] || { x: width / 2, y: height / 2 })
+    setLayout({ columns, rows, cells, stepMs, duration })
+    setCursorPositions(initialPositions)
+
+    const startedAt = performance.now()
+    let animationFrame
+    let lastUpdate = 0
+    let finished = false
+
+    const tick = (now) => {
+      if (finished) return
+      const elapsed = now - startedAt
+      if (now - lastUpdate >= 32 || elapsed >= duration) {
+        lastUpdate = now
+        setProgress(Math.min(1, elapsed / duration))
+        const positions = paths.map((path, agentIndex) => {
+          if (!path.length) return { x: width / 2, y: height / 2 }
+          const firstVisit = path[0].index * stepMs
+          const interval = stepMs * SWARM_AGENTS.length
+          if (elapsed <= firstVisit) return path[0]
+          const routeTime = (elapsed - firstVisit) / interval
+          const segment = Math.min(Math.floor(routeTime), path.length - 1)
+          const fraction = segment >= path.length - 1 ? 0 : routeTime - segment
+          const from = path[segment]
+          const to = path[Math.min(segment + 1, path.length - 1)]
+          const eased = fraction * fraction * (3 - 2 * fraction)
+          return {
+            x: from.x + (to.x - from.x) * eased,
+            y: from.y + (to.y - from.y) * eased,
+          }
+        })
+        setCursorPositions(positions)
+      }
+
+      if (elapsed < duration) {
+        animationFrame = requestAnimationFrame(tick)
+      } else {
+        finished = true
+        window.setTimeout(onComplete, 180)
+      }
+    }
+
+    animationFrame = requestAnimationFrame(tick)
+    return () => {
+      finished = true
+      cancelAnimationFrame(animationFrame)
+    }
+  }, [onComplete])
+
+  if (!layout) return null
+
+  return (
+    <div className="swarm-rebuild-overlay" role="status" aria-live="polite" aria-label="Multiple cursors are rebuilding the portfolio">
+      <div
+        className="swarm-cell-grid"
+        style={{ gridTemplateColumns: `repeat(${layout.columns}, 1fr)`, gridTemplateRows: `repeat(${layout.rows}, 1fr)` }}
+      >
+        {layout.cells.map(cell => (
+          <span
+            key={cell.index}
+            className="swarm-rebuild-tile"
+            style={{ animationDelay: `${cell.index * layout.stepMs}ms` }}
+          />
+        ))}
+      </div>
+
+      <div className="swarm-hud">
+        <div className="swarm-hud-heading">
+          <span className="swarm-live-dot" /> MULTI-AGENT SESSION
+          <strong>REBUILDING PORTFOLIO</strong>
+        </div>
+        <div className="swarm-progress-track"><span style={{ width: `${progress * 100}%` }} /></div>
+        <div className="swarm-hud-foot"><span>{SWARM_AGENTS.length} CURSORS CONNECTED</span><span>{Math.round(progress * 100)}%</span></div>
+      </div>
+
+      {SWARM_AGENTS.map((agent, index) => {
+        const position = cursorPositions[index] || { x: 0, y: 0 }
+        return (
+          <div
+            className="swarm-live-cursor"
+            key={agent.name}
+            style={{ left: position.x, top: position.y, '--agent-color': agent.color }}
+          >
+            <MousePointer2 size={24} strokeWidth={2.4} />
+            <span>{agent.name}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const [swarmRunId, setSwarmRunId] = React.useState(0)
+  const [swarmActive, setSwarmActive] = React.useState(false)
+  const startSwarmRebuild = React.useCallback(() => {
+    setSwarmRunId(id => id + 1)
+    setSwarmActive(true)
+  }, [])
+  const finishSwarmRebuild = React.useCallback(() => setSwarmActive(false), [])
+
+  React.useEffect(() => {
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion) return undefined
+    const timer = window.setTimeout(startSwarmRebuild, 850)
+    return () => window.clearTimeout(timer)
+  }, [startSwarmRebuild])
   const closeMenu = () => setMenuOpen(false)
   const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Contact', '#contact']]
 
@@ -246,6 +384,7 @@ function App() {
             <motion.div className="hero-actions" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .6 }}>
               <a className="button button-primary" href="#projects">Explore my work <ArrowUpRight size={17} /></a>
               <a className="button button-ghost" href="#contact">Get in touch <Mail size={16} /></a>
+              <button className="button button-swarm" type="button" onClick={startSwarmRebuild}><MousePointer2 size={16} /> Watch swarm rebuild</button>
             </motion.div>
             <motion.div className="hero-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .8 }}>
               <span><MapPin size={14} /> India</span>
@@ -372,6 +511,7 @@ function App() {
         <span>© {new Date().getFullYear()} {profile.name}. Built with intent.</span>
         <a href="#home" className="back-top">BACK TO TOP ↑</a>
       </footer>
+      {swarmActive && <SwarmRebuildOverlay key={swarmRunId} onComplete={finishSwarmRebuild} />}
     </div>
   )
 }

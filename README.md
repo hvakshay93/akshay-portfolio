@@ -1,4 +1,4 @@
-# Akshay Ranganath H V — Portfolio 
+# Akshay Ranganath H V — Portfolio
 
 A responsive Cloud & DevOps Engineer portfolio built with React, Vite, Tailwind CSS and Framer Motion.
 
@@ -47,3 +47,7 @@ The Vite base path is set to `./`, so assets work on both user/organization and 
 ## Personal portrait effect
 
 The supplied profile photo is stored at `public/akshay-profile.jpg`. The hero includes a canvas-based particle swarm reconstruction animation. Use the **REBUILD WITH SWARM** control to replay it.
+
+## Multiplayer cursor swarm effect
+
+The homepage runs a short page-rebuild intro on first load (unless reduced motion is enabled). Multiple labelled cursor agents sweep across a tiled mask, clearing tiles to reveal the actual webpage beneath. Use **Watch swarm rebuild** in the hero section to replay the effect. This is a local visual simulation; it does not represent real multiplayer users or live network collaboration.
