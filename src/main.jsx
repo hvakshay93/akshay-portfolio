@@ -12,8 +12,8 @@ import './styles.css'
 
 const profile = {
   name: 'Akshay Ranganath H V',
-  title: 'Cloud & DevOps Engineer',
-  tagline: 'AWS  /  SAP  /  Terraform',
+  title: 'Senior Software Engineer | Cloud & DevOps',
+  tagline: 'AWS  /  AUTOMATION  /  RELIABILITY',
   email: 'akshayhv@hotmail.com',
   github: 'https://github.com/hvakshay93',
   linkedin: 'https://www.linkedin.com/in/akshay-ranganath-h-v-619a671a4',
@@ -21,13 +21,50 @@ const profile = {
 
 const skills = [
   { name: 'AWS Cloud', detail: 'EC2, EBS, EFS, IAM, VPC, Backup & DR', icon: Cloud, group: 'Cloud' },
+  { name: 'Microsoft Azure', detail: 'Cloud infrastructure and platform operations', icon: Cloud, group: 'Cloud' },
   { name: 'Terraform', detail: 'Infrastructure as Code & reusable modules', icon: Workflow, group: 'Automation' },
+  { name: 'Ansible', detail: 'Configuration management and infrastructure automation', icon: Workflow, group: 'Automation' },
   { name: 'SAP Infrastructure', detail: 'SAP S/4HANA, HANA, ASCS & dialog tiers', icon: Server, group: 'Platforms' },
   { name: 'Linux Administration', detail: 'System operations, storage & troubleshooting', icon: Terminal, group: 'Platforms' },
-  { name: 'CI/CD', detail: 'GitLab pipelines, Jenkins & release workflows', icon: GitBranch, group: 'Automation' },
+  { name: 'CI/CD', detail: 'GitLab, GitHub Actions, Jenkins & release workflows', icon: GitBranch, group: 'Automation' },
+  { name: 'Docker & Kubernetes', detail: 'Container packaging and orchestration fundamentals', icon: Layers3, group: 'Platforms' },
   { name: 'Disaster Recovery', detail: 'Backup vaults, restore planning & validation', icon: ShieldCheck, group: 'Reliability' },
-  { name: 'Containers', detail: 'Docker, images & application packaging', icon: Layers3, group: 'Automation' },
+  { name: 'Incident Management', detail: 'Service restoration, escalation and stakeholder updates', icon: Activity, group: 'Reliability' },
   { name: 'Monitoring & Cost', detail: 'Operational visibility and cost optimization', icon: Gauge, group: 'Reliability' },
+]
+
+const experience = [
+  {
+    period: 'JUN 2026 — PRESENT',
+    role: 'Senior Software Engineer',
+    company: 'Allianz Technology',
+    location: 'India',
+    summary: 'Specializing in AWS infrastructure automation and SAP workloads, with a focus on reliability, scalability and security.',
+    highlights: ['Terraform-driven AWS infrastructure automation', 'SAP workload infrastructure and operational reliability', 'GitLab and GitHub engineering workflows', 'Solving complex infrastructure challenges against business requirements'],
+  },
+  {
+    period: 'APR 2021 — MAR 2026',
+    role: 'Senior Tech Lead',
+    company: 'Tech Mahindra Ltd',
+    location: 'Bangalore, India',
+    summary: 'Led infrastructure, automation and enterprise operations across Linux, AWS, CI/CD and SAP ECS environments.',
+    highlights: ['AWS infrastructure with Ansible and AWS services', 'Jenkins and GitHub Actions delivery pipelines', 'Linux OS backup and recovery with ReaR', 'SAP ECS incident management and cross-team restoration'],
+  },
+  {
+    period: 'APR 2018 — MAR 2021',
+    role: 'Linux Administrator',
+    company: 'Lifestyle International Pvt. Ltd',
+    location: 'Bangalore, India',
+    summary: 'Supported Linux server estates, developer environments, web services and cloud infrastructure operations.',
+    highlights: ['DHCP, DNS and NFS services for 100+ developer environments', 'Apache virtual hosting and Tomcat integration', 'AWS solutions for performance and reliability', 'DevOps tooling and deployment infrastructure support'],
+  },
+]
+
+const certifications = [
+  'AWS Cloud Practitioner / Solutions Architect',
+  'Linux Certification',
+  'Cybersecurity Analyst',
+  'Ansible — Hands-On DevOps',
 ]
 
 const projects = [
@@ -255,7 +292,7 @@ function App() {
   const [selectedProject, setSelectedProject] = React.useState(null)
   const [theme, setTheme] = React.useState(() => window.localStorage.getItem('portfolio-theme') || 'dark')
   const closeMenu = () => setMenuOpen(false)
-  const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Notes', '#notes'], ['Contact', '#contact']]
+  const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Experience', '#experience'], ['Notes', '#notes'], ['Contact', '#contact']]
   const skillGroups = ['All', 'Cloud', 'Automation', 'Platforms', 'Reliability']
   const visibleSkills = skillFilter === 'All' ? skills : skills.filter(skill => skill.group === skillFilter)
 
@@ -341,6 +378,7 @@ function App() {
             <motion.div className="hero-actions" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .6 }}>
               <a className="button button-primary" href="#projects">Explore my work <ArrowUpRight size={17} /></a>
               <a className="button button-ghost" href="#contact">Get in touch <Mail size={16} /></a>
+              <a className="button button-ghost button-cv" href={`${import.meta.env.BASE_URL}Akshay-Ranganath-HV-CV.pdf`} download>Download CV <ArrowDown size={16} /></a>
             </motion.div>
             <motion.div className="hero-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .8 }}>
               <span><MapPin size={14} /> India</span>
@@ -446,15 +484,23 @@ function App() {
           </div>
         </section>
 
+        <section className="experience-section section-wrap" id="experience">
+          <Reveal><SectionHeading eyebrow="04 / EXPERIENCE" title={<>Experience built<br /><span className="muted-heading">in production.</span></>} description="A focused view of the roles and operating environments behind my infrastructure experience." /></Reveal>
+          <div className="experience-list">
+            {experience.map((item, i) => <Reveal key={item.company} delay={i * .08}><article className="experience-item"><div className="experience-period">{item.period}</div><div className="experience-marker"><span /></div><div className="experience-content"><div className="experience-heading"><div><h3>{item.role}</h3><p>{item.company} <span>·</span> {item.location}</p></div><span className="experience-index">0{i + 1}</span></div><p className="experience-summary">{item.summary}</p><div className="experience-highlights">{item.highlights.map(highlight => <span key={highlight}><CheckCircle2 size={13} /> {highlight}</span>)}</div></div></article></Reveal>)}
+          </div>
+          <div className="credentials-strip"><div><span className="eyebrow">CREDENTIALS</span><strong>Continuous learning, practical delivery.</strong></div><div className="credential-list">{certifications.map(certification => <span key={certification}><Check size={13} /> {certification}</span>)}</div></div>
+        </section>
+
         <section className="notes-section section-wrap" id="notes">
-          <Reveal><SectionHeading eyebrow="04 / TECHNICAL NOTES" title={<>Ideas worth<br /><span className="muted-heading">sharing clearly.</span></>} description="Short-form topics I can expand into articles, diagrams and practical guides." /></Reveal>
+          <Reveal><SectionHeading eyebrow="05 / TECHNICAL NOTES" title={<>Ideas worth<br /><span className="muted-heading">sharing clearly.</span></>} description="Short-form topics I can expand into articles, diagrams and practical guides." /></Reveal>
           <div className="notes-grid">
             {notes.map((note, i) => <Reveal key={note.title} delay={i * .07}><article className="note-card"><div className="note-icon"><BookOpen size={18} /></div><span>{note.category}</span><h3>{note.title}</h3><p>{note.text}</p><button type="button" className="text-link" onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>Request this topic <ArrowUpRight size={14} /></button></article></Reveal>)}
           </div>
         </section>
 
         <section className="section-wrap approach-section" id="approach">
-          <Reveal><SectionHeading eyebrow="05 / HOW I WORK" title={<>From complexity<br /><span className="muted-heading">to clarity.</span></>} /></Reveal>
+          <Reveal><SectionHeading eyebrow="06 / HOW I WORK" title={<>From complexity<br /><span className="muted-heading">to clarity.</span></>} /></Reveal>
           <div className="approach-grid">
             {[
               ['01', 'Understand', 'Start with the workload, constraints and operational requirements.'],
