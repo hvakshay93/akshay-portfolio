@@ -5,7 +5,7 @@ import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
   Cloud, Server, Workflow, ShieldCheck, Database, Terminal, GitBranch,
   Layers3, Activity, ExternalLink, CheckCircle2, Code2, Cpu, HardDrive,
-  Network, Gauge, ChevronRight
+  Network, Gauge, ChevronRight, Copy, Check, Sparkles, ArrowRight
 } from 'lucide-react'
 import './styles.css'
 
@@ -208,20 +208,56 @@ function SwarmPortrait() {
 
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const [scrolled, setScrolled] = React.useState(false)
+  const [activeSection, setActiveSection] = React.useState('home')
+  const [skillFilter, setSkillFilter] = React.useState('All')
+  const [emailCopied, setEmailCopied] = React.useState(false)
   const closeMenu = () => setMenuOpen(false)
   const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Contact', '#contact']]
+  const skillGroups = ['All', 'Cloud', 'Automation', 'Platforms', 'Reliability']
+  const visibleSkills = skillFilter === 'All' ? skills : skills.filter(skill => skill.group === skillFilter)
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(profile.email)
+      setEmailCopied(true)
+      window.setTimeout(() => setEmailCopied(false), 2200)
+    } catch {
+      window.location.href = `mailto:${profile.email}`
+    }
+  }
+
+  React.useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24)
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      document.documentElement.style.setProperty('--scroll-progress', `${maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0}%`)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(entry => entry.isIntersecting && setActiveSection(entry.target.id)),
+      { rootMargin: '-25% 0px -60% 0px', threshold: 0.01 },
+    )
+    document.querySelectorAll('section[id]').forEach(section => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="site-shell">
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
-      <header className="topbar">
+      <div className="scroll-progress" aria-hidden="true" />
+      <header className={`topbar${scrolled ? ' topbar-scrolled' : ''}`}>
         <a className="brand" href="#home" onClick={closeMenu} aria-label="Akshay home">
           <span className="brand-mark">A<span>.</span></span>
           <span className="brand-name">AKSHAY<span> / CLOUD & DEVOPS</span></span>
         </a>
         <nav className={menuOpen ? 'nav nav-open' : 'nav'}>
-          {nav.map(([label, href]) => <a key={label} href={href} onClick={closeMenu}>{label}</a>)}
+          {nav.map(([label, href]) => <a key={label} href={href} onClick={closeMenu} className={activeSection === href.slice(1) ? 'nav-active' : ''}>{label}</a>)}
           <a className="nav-cta" href="#contact" onClick={closeMenu}>Let's talk <ArrowUpRight size={15} /></a>
         </nav>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
@@ -233,7 +269,7 @@ function App() {
         <section className="hero section-wrap" id="home">
           <div className="hero-copy">
             <motion.div className="availability" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .15 }}>
-              <span className="pulse-dot" /> CLOUD. AUTOMATION. RELIABILITY.
+              <span className="pulse-dot" /> BUILDING RELIABLE SYSTEMS
             </motion.div>
             <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .75, delay: .2 }}>
               Building cloud<br />
@@ -252,6 +288,11 @@ function App() {
               <span className="meta-divider" />
               <span>{profile.tagline}</span>
             </motion.div>
+            <div className="hero-proof">
+              <div><strong>03</strong><span>core disciplines</span></div>
+              <div><strong>01</strong><span>reliability mindset</span></div>
+              <div><strong>∞</strong><span>room to scale</span></div>
+            </div>
           </div>
 
           <motion.div className="hero-visual" initial={{ opacity: 0, scale: .94, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: .9, delay: .35 }}>
@@ -293,14 +334,21 @@ function App() {
 
         <section className="section-wrap expertise-section" id="expertise">
           <Reveal><SectionHeading eyebrow="02 / EXPERTISE" title={<>Tools are useful.<br /><span className="muted-heading">Outcomes matter.</span></>} description="The technologies and disciplines I use to build, automate and operate infrastructure." /></Reveal>
+          <div className="filter-bar" aria-label="Filter expertise">
+            <span className="filter-label"><Sparkles size={14} /> FOCUS AREAS</span>
+            <div className="filter-options">
+              {skillGroups.map(group => <button key={group} type="button" className={skillFilter === group ? 'filter-button filter-active' : 'filter-button'} onClick={() => setSkillFilter(group)}>{group}</button>)}
+            </div>
+            <span className="filter-count">{visibleSkills.length.toString().padStart(2, '0')} SKILLS</span>
+          </div>
           <div className="skills-grid">
-            {skills.map((skill, i) => {
+            {visibleSkills.map((skill, i) => {
               const Icon = skill.icon
               return <Reveal key={skill.name} delay={i * .045}>
                 <div className="skill-card">
                   <div className="skill-top"><span className="skill-icon"><Icon size={19} /></span><span className="skill-group">{skill.group}</span></div>
                   <h3>{skill.name}</h3><p>{skill.detail}</p>
-                  <span className="skill-arrow"><ArrowUpRight size={15} /></span>
+                    <span className="skill-arrow"><ArrowRight size={15} /></span>
                 </div>
               </Reveal>
             })}
@@ -319,7 +367,7 @@ function App() {
             <div className="projects-list">
               {projects.map((project, i) => {
                 const Icon = project.icon
-                return <Reveal key={project.number} delay={i * .06}>
+              return <Reveal key={project.number} delay={i * .06}>
                   <article className={`project-card project-${project.color}`}>
                     <div className="project-number">{project.number}</div>
                     <div className="project-icon"><Icon size={24} /></div>
@@ -329,7 +377,7 @@ function App() {
                       <p>{project.description}</p>
                       <div className="tag-list">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
                     </div>
-                    <div className="project-mark"><ArrowUpRight size={20} /></div>
+                    <div className="project-mark" aria-label={`Explore ${project.title}`}><ArrowUpRight size={20} /></div>
                   </article>
                 </Reveal>
               })}
@@ -356,7 +404,10 @@ function App() {
               <span className="eyebrow">05 / CONTACT</span>
               <h2>Have a cloud challenge?<br /><span className="gradient-text">Let's build something solid.</span></h2>
               <p>Open to conversations about cloud infrastructure, DevOps, SAP on AWS and automation.</p>
-              <a className="button button-primary contact-button" href={`mailto:${profile.email}`}>Start a conversation <ArrowUpRight size={17} /></a>
+              <div className="contact-actions">
+                <a className="button button-primary contact-button" href={`mailto:${profile.email}`}>Start a conversation <ArrowUpRight size={17} /></a>
+                <button className="copy-email" type="button" onClick={copyEmail}>{emailCopied ? <Check size={15} /> : <Copy size={15} />} {emailCopied ? 'Email copied' : 'Copy email'}</button>
+              </div>
             </Reveal>
             <Reveal className="contact-links" delay={.12}>
               <a href={`mailto:${profile.email}`}><span className="contact-link-icon"><Mail size={18} /></span><span><small>EMAIL</small>{profile.email}</span><ArrowUpRight size={17} /></a>
