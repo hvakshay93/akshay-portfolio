@@ -5,7 +5,8 @@ import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
   Cloud, Server, Workflow, ShieldCheck, Database, Terminal, GitBranch,
   Layers3, Activity, ExternalLink, CheckCircle2, Code2, Cpu, HardDrive,
-  Network, Gauge, ChevronRight, Copy, Check, Sparkles, ArrowRight
+  Network, Gauge, ChevronRight, Copy, Check, Sparkles, ArrowRight, Sun, Moon,
+  BookOpen, Send, XCircle
 } from 'lucide-react'
 import './styles.css'
 
@@ -35,6 +36,9 @@ const projects = [
     type: 'INFRASTRUCTURE AS CODE',
     title: 'SAP on AWS — Infrastructure Automation',
     description: 'Provisioning and maintaining SAP landscape infrastructure on AWS using Terraform, with an emphasis on repeatability, environment consistency and controlled deployments.',
+    challenge: 'Enterprise infrastructure needs to be consistent across environments while remaining safe to change.',
+    approach: 'Use reusable Terraform modules, version-controlled workflows and clear environment boundaries to make infrastructure changes repeatable and reviewable.',
+    outcome: 'A more predictable path from infrastructure change to deployment, with operational decisions easier to understand and validate.',
     tags: ['AWS', 'Terraform', 'SAP S/4HANA', 'GitLab CI/CD'],
     icon: Cloud,
     color: 'blue',
@@ -44,6 +48,9 @@ const projects = [
     type: 'BUSINESS CONTINUITY',
     title: 'AWS Disaster Recovery & Restore',
     description: 'Working with cross-region backup and recovery for SAP workloads, including EC2 images, EBS snapshots and EFS backup restoration workflows.',
+    challenge: 'Recovery plans need to be practical, testable and aligned with the dependencies of critical workloads.',
+    approach: 'Map recovery workflows across EC2, EBS and EFS, then document restore sequences and validation checkpoints.',
+    outcome: 'A clearer recovery model that helps teams reason about restore readiness before an incident occurs.',
     tags: ['AWS Backup', 'EBS', 'EFS', 'DR'],
     icon: ShieldCheck,
     color: 'mint',
@@ -53,6 +60,9 @@ const projects = [
     type: 'CLOUD GOVERNANCE',
     title: 'AWS Cost & Configuration Audit',
     description: 'Reviewing infrastructure and cost optimization findings, identifying configuration gaps and documenting implementation risks before changes are applied.',
+    challenge: 'Cloud cost and configuration improvements can introduce risk when context is missing.',
+    approach: 'Review findings alongside workload requirements, operational constraints and implementation dependencies before recommending changes.',
+    outcome: 'Better-informed improvement work with risks and trade-offs made visible to stakeholders.',
     tags: ['AWS', 'FinOps', 'Governance', 'Risk Review'],
     icon: Activity,
     color: 'violet',
@@ -62,10 +72,19 @@ const projects = [
     type: 'SECURITY & OPERATIONS',
     title: 'Infrastructure Security Remediation',
     description: 'Assessing infrastructure-level security findings and translating remediation requirements into controlled, reviewable infrastructure changes.',
+    challenge: 'Security remediation has to improve the control surface without destabilizing production systems.',
+    approach: 'Translate findings into scoped infrastructure changes, review them through version control and validate the operational impact.',
+    outcome: 'A safer remediation process with clearer ownership, traceability and rollback considerations.',
     tags: ['Terraform', 'Security', 'Linux', 'IaC'],
     icon: ShieldCheck,
     color: 'orange',
   },
+]
+
+const notes = [
+  { category: 'AWS / OPERATIONS', title: 'Designing for recovery before failure', text: 'A practical checklist for thinking through backups, dependencies, restore order and validation.' },
+  { category: 'TERRAFORM / DELIVERY', title: 'Infrastructure changes people can review', text: 'Why small modules, clear environments and version history make cloud operations easier to trust.' },
+  { category: 'SAP / CLOUD', title: 'The infrastructure beneath an SAP landscape', text: 'A visual guide to the cloud building blocks that support enterprise workloads.' },
 ]
 
 const capabilities = [
@@ -206,14 +225,37 @@ function SwarmPortrait() {
   )
 }
 
+function ProjectModal({ project, onClose }) {
+  if (!project) return null
+  const Icon = project.icon
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <article className={`project-modal project-${project.color}`} role="dialog" aria-modal="true" aria-labelledby="project-modal-title" onMouseDown={event => event.stopPropagation()}>
+        <button className="modal-close" type="button" onClick={onClose} aria-label="Close case study"><XCircle size={20} /></button>
+        <div className="modal-kicker"><span className="project-icon"><Icon size={24} /></span><span>{project.number} / {project.type}</span></div>
+        <h2 id="project-modal-title">{project.title}</h2>
+        <p className="modal-intro">{project.description}</p>
+        <div className="case-study-grid">
+          <div><span>THE CHALLENGE</span><p>{project.challenge}</p></div>
+          <div><span>THE APPROACH</span><p>{project.approach}</p></div>
+          <div><span>THE VALUE</span><p>{project.outcome}</p></div>
+        </div>
+        <div className="tag-list">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
+      </article>
+    </div>
+  )
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
   const [activeSection, setActiveSection] = React.useState('home')
   const [skillFilter, setSkillFilter] = React.useState('All')
   const [emailCopied, setEmailCopied] = React.useState(false)
+  const [selectedProject, setSelectedProject] = React.useState(null)
+  const [theme, setTheme] = React.useState(() => window.localStorage.getItem('portfolio-theme') || 'dark')
   const closeMenu = () => setMenuOpen(false)
-  const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Contact', '#contact']]
+  const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Notes', '#notes'], ['Contact', '#contact']]
   const skillGroups = ['All', 'Cloud', 'Automation', 'Platforms', 'Reliability']
   const visibleSkills = skillFilter === 'All' ? skills : skills.filter(skill => skill.group === skillFilter)
 
@@ -225,6 +267,20 @@ function App() {
     } catch {
       window.location.href = `mailto:${profile.email}`
     }
+  }
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    window.localStorage.setItem('portfolio-theme', nextTheme)
+  }
+
+  const submitContact = event => {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    const subject = encodeURIComponent(`Portfolio enquiry from ${form.get('name')}`)
+    const body = encodeURIComponent(`Name: ${form.get('name')}\nEmail: ${form.get('email')}\n\n${form.get('message')}`)
+    window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`
   }
 
   React.useEffect(() => {
@@ -247,7 +303,7 @@ function App() {
   }, [])
 
   return (
-    <div className="site-shell">
+    <div className={`site-shell theme-${theme}`}>
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
       <div className="scroll-progress" aria-hidden="true" />
@@ -259,6 +315,9 @@ function App() {
         <nav className={menuOpen ? 'nav nav-open' : 'nav'}>
           {nav.map(([label, href]) => <a key={label} href={href} onClick={closeMenu} className={activeSection === href.slice(1) ? 'nav-active' : ''}>{label}</a>)}
           <a className="nav-cta" href="#contact" onClick={closeMenu}>Let's talk <ArrowUpRight size={15} /></a>
+          <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
         </nav>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
           {menuOpen ? <X /> : <Menu />}
@@ -377,17 +436,25 @@ function App() {
                       <p>{project.description}</p>
                       <div className="tag-list">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
                     </div>
-                    <div className="project-mark" aria-label={`Explore ${project.title}`}><ArrowUpRight size={20} /></div>
+                    <button className="project-mark" type="button" aria-label={`Open ${project.title} case study`} onClick={() => setSelectedProject(project)}><ArrowUpRight size={20} /></button>
                   </article>
                 </Reveal>
               })}
             </div>
             <div className="project-note"><CheckCircle2 size={16} /> Client and production details are kept confidential. Public code samples can be added here as they become available.</div>
+            <p className="interaction-hint"><ArrowUpRight size={13} /> Select any project to explore the challenge, approach and value.</p>
           </div>
         </section>
 
-        <section className="section-wrap approach-section">
-          <Reveal><SectionHeading eyebrow="04 / HOW I WORK" title={<>From complexity<br /><span className="muted-heading">to clarity.</span></>} /></Reveal>
+        <section className="notes-section section-wrap" id="notes">
+          <Reveal><SectionHeading eyebrow="04 / TECHNICAL NOTES" title={<>Ideas worth<br /><span className="muted-heading">sharing clearly.</span></>} description="Short-form topics I can expand into articles, diagrams and practical guides." /></Reveal>
+          <div className="notes-grid">
+            {notes.map((note, i) => <Reveal key={note.title} delay={i * .07}><article className="note-card"><div className="note-icon"><BookOpen size={18} /></div><span>{note.category}</span><h3>{note.title}</h3><p>{note.text}</p><button type="button" className="text-link" onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>Request this topic <ArrowUpRight size={14} /></button></article></Reveal>)}
+          </div>
+        </section>
+
+        <section className="section-wrap approach-section" id="approach">
+          <Reveal><SectionHeading eyebrow="05 / HOW I WORK" title={<>From complexity<br /><span className="muted-heading">to clarity.</span></>} /></Reveal>
           <div className="approach-grid">
             {[
               ['01', 'Understand', 'Start with the workload, constraints and operational requirements.'],
@@ -415,6 +482,12 @@ function App() {
               <a href={profile.github} target="_blank" rel="noreferrer"><span className="contact-link-icon"><Github size={18} /></span><span><small>GITHUB</small>@hvakshay93</span><ArrowUpRight size={17} /></a>
             </Reveal>
           </div>
+          <form className="contact-form section-wrap" onSubmit={submitContact}>
+            <div className="form-heading"><Send size={16} /><span>OR SEND A QUICK NOTE</span></div>
+            <div className="form-grid"><label>Name<input required name="name" placeholder="Your name" /></label><label>Email<input required type="email" name="email" placeholder="you@example.com" /></label></div>
+            <label>Message<textarea required name="message" rows="4" placeholder="Tell me what you are working on..." /></label>
+            <button className="button button-primary" type="submit">Open email draft <ArrowUpRight size={17} /></button>
+          </form>
         </section>
       </main>
 
@@ -423,6 +496,7 @@ function App() {
         <span>© {new Date().getFullYear()} {profile.name}. Built with intent.</span>
         <a href="#home" className="back-top">BACK TO TOP ↑</a>
       </footer>
+      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
     </div>
   )
 }
