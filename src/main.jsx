@@ -509,10 +509,13 @@ function App() {
               <div className="contact-actions">
                 <a className="button button-primary contact-button" href={`https://wa.me/${profile.whatsapp}?text=Hello%20Akshay%2C%20I%27d%20like%20to%20discuss%20a%20cloud%20opportunity.`} target="_blank" rel="noreferrer"><MessageCircle size={17} /> Message on WhatsApp</a>
                 <span className="whatsapp-number"><MessageCircle size={14} /> +91 6366521166</span>
+                <span className="contact-separator" aria-hidden="true">|</span>
+                <a className="email-inline" href={`mailto:${profile.email}`}><Mail size={14} /> {profile.email}</a>
               </div>
             </Reveal>
             <Reveal className="contact-links" delay={.12}>
               <a href={`https://wa.me/${profile.whatsapp}`} target="_blank" rel="noreferrer"><span className="contact-link-icon"><MessageCircle size={18} /></span><span><small>WHATSAPP</small>+91 6366521166</span><ArrowUpRight size={17} /></a>
+              <a href={`mailto:${profile.email}`}><span className="contact-link-icon"><Mail size={18} /></span><span><small>EMAIL</small>{profile.email}</span><ArrowUpRight size={17} /></a>
               <a href={profile.linkedin} target="_blank" rel="noreferrer"><span className="contact-link-icon"><Linkedin size={18} /></span><span><small>LINKEDIN</small>Connect professionally</span><ArrowUpRight size={17} /></a>
               <a href={profile.github} target="_blank" rel="noreferrer"><span className="contact-link-icon"><Github size={18} /></span><span><small>GITHUB</small>@hvakshay93</span><ArrowUpRight size={17} /></a>
             </Reveal>

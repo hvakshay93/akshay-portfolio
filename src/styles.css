@@ -319,6 +319,9 @@ button { font: inherit; }
 .contact-actions { display: flex; align-items: center; gap: 17px; flex-wrap: wrap; }
 .whatsapp-number { display: inline-flex; align-items: center; gap: 7px; margin-top: 19px; color: #7cddb9; font: 10px 'DM Mono', monospace; letter-spacing: .04em; }
 .whatsapp-number svg { color: #7cddb9; }
+.contact-separator { margin-top: 19px; color: #586780; font: 11px 'DM Mono', monospace; }
+.email-inline { display: inline-flex; align-items: center; gap: 7px; margin-top: 19px; color: #9aa9c7; font: 10px 'DM Mono', monospace; transition: color .2s; }
+.email-inline:hover { color: #e7eeff; }
 .copy-email { display: inline-flex; align-items: center; gap: 7px; margin-top: 19px; padding: 12px 0; border: 0; background: transparent; color: #9aa9c7; cursor: pointer; font-size: 11px; transition: color .2s; }
 .copy-email:hover { color: #e7eeff; }
 @media (max-width: 680px) {
@@ -328,6 +331,8 @@ button { font: inherit; }
   .filter-bar { align-items: flex-start; flex-direction: column; gap: 10px; margin-top: -8px; }
   .filter-count { margin-left: 0; }
   .contact-actions { gap: 8px; }
+  .contact-separator { display: none; }
+  .email-inline { width: 100%; margin-top: 5px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
