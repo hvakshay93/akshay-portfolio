@@ -1,6 +1,9 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { motion } from 'framer-motion'
+import {
+  motion,
+  useSpring,
+} from 'framer-motion'
 import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
   Cloud, Server, Workflow, ShieldCheck, Database, Terminal, GitBranch,
@@ -76,8 +79,17 @@ const capabilities = [
 ]
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, y: 30, scale: 0.96 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+  exit: { opacity: 0, y: -20, scale: 0.94, transition: { duration: 0.4 } },
+}
+
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.09, delayChildren: 0.1 },
+  },
 }
 
 function Reveal({ children, className = '', delay = 0 }) {
@@ -87,9 +99,17 @@ function Reveal({ children, className = '', delay = 0 }) {
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.16 }}
+      viewport={{ once: true, amount: 0.12 }}
       transition={{ delay }}
     >
+      {children}
+    </motion.div>
+  )
+}
+
+function RevealGroup({ children, className = '' }) {
+  return (
+    <motion.div className={className} variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.12 }}>
       {children}
     </motion.div>
   )
@@ -105,6 +125,74 @@ function SectionHeading({ eyebrow, title, description }) {
   )
 }
 
+/* Animated gradient mesh background — pure CSS blobs that drift slowly */
+const meshBlobs = [
+  { color: 'rgba(72, 107, 255, 0.16)', left: '10%', top: '-10%', w: '560px', h: '560px', delay: '0s' },
+  { color: 'rgba(66, 217, 176, 0.12)', left: '70%', top: '10%', w: '500px', h: '500px', delay: '4s' },
+  { color: 'rgba(196, 177, 255, 0.14)', left: '40%', top: '60%', w: '460px', h: '460px', delay: '8s' },
+]
+function Background() {
+  return (
+    <div className="mesh">
+      {meshBlobs.map((b, i) => (
+        <div
+          key={i}
+          className="blob"
+          style={{
+            backgroundColor: b.color,
+            left: b.left,
+            top: b.top,
+            width: b.w,
+            height: b.h,
+            animationDelay: b.delay,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* Subtle film-grain overlay for texture */
+function Grain() {
+  return (
+    <div className="grain" />
+  )
+}
+
+/* Mouse-following ambient glow */
+function MouseGlow() {
+  return (
+    <div className="mouse-glow" onMouseMove={(e) => {
+      document.documentElement.style.setProperty('--glow-x', `${e.clientX}px`)
+      document.documentElement.style.setProperty('--glow-y', `${e.clientY}px`)
+    }} />
+  )
+}
+
+/* Magnetic button — nudges toward the cursor */
+function Magnetic({ children }) {
+  const ref = React.useRef(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const xSpring = useSpring(x, { stiffness: 140, damping: 16 })
+  const ySpring = useSpring(y, { stiffness: 140, damping: 16 })
+  const onMove = (e) => {
+    const rect = ref.current.getBoundingClientRect()
+    x.set(e.clientX - (rect.left + rect.width / 2))
+    y.set(e.clientY - (rect.top + rect.height / 2))
+  }
+  const onLeave = () => { x.set(0); y.set(0) }
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      style={{ x: xSpring, y: ySpring }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
 function SwarmPortrait() {
   const canvasRef = React.useRef(null)
@@ -208,25 +296,72 @@ function SwarmPortrait() {
 
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const [scrolled, setScrolled] = React.useState(false)
+  const [activeSection, setActiveSection] = React.useState('home')
   const closeMenu = () => setMenuOpen(false)
-  const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Contact', '#contact']]
+  const nav = [
+    ['About', '#about'],
+    ['Expertise', '#expertise'],
+    ['Projects', '#projects'],
+    ['Contact', '#contact'],
+  ]
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.boundingClientRect.top - a.boundingClientRect.top)
+        if (visible.length) setActiveSection(visible[0].target.id)
+      },
+      { rootMargin: '-10% 0% -60% 0%', threshold: 0.05 },
+    )
+    document.querySelectorAll('section[id]').forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="site-shell">
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
-      <header className="topbar">
-        <a className="brand" href="#home" onClick={closeMenu} aria-label="Akshay home">
-          <span className="brand-mark">A<span>.</span></span>
-          <span className="brand-name">AKSHAY<span> / CLOUD & DEVOPS</span></span>
-        </a>
-        <nav className={menuOpen ? 'nav nav-open' : 'nav'}>
-          {nav.map(([label, href]) => <a key={label} href={href} onClick={closeMenu}>{label}</a>)}
-          <a className="nav-cta" href="#contact" onClick={closeMenu}>Let's talk <ArrowUpRight size={15} /></a>
-        </nav>
-        <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
-          {menuOpen ? <X /> : <Menu />}
-        </button>
+      <Background />
+      <Grain />
+      <MouseGlow />
+      <div className="page-glow" />
+
+      <header
+        className={`topbar${scrolled ? ' topbar-scrolled' : ''}`}
+      >
+        <div className="topbar-inner">
+          <a className="brand" href="#home" onClick={closeMenu} aria-label="Akshay home">
+            <span className="brand-mark">A<span>.</span></span>
+            <span className="brand-name">AKSHAY<span> / CLOUD & DEVOPS</span></span>
+          </a>
+          <nav className={menuOpen ? 'nav nav-open' : 'nav'}>
+            {nav.map(([label, href]) => (
+              <a
+                key={label}
+                href={href}
+                onClick={closeMenu}
+                className={activeSection === href.slice(1) ? 'nav-active' : ''}
+              >
+                {label}
+              </a>
+            ))}
+            <Magnetic>
+              <a className="nav-cta" href="#contact" onClick={closeMenu}>
+                Let's talk <ArrowUpRight size={15} />
+              </a>
+            </Magnetic>
+          </nav>
+          <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
+            {menuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </header>
 
       <main>
@@ -244,7 +379,9 @@ function App() {
               I turn complex infrastructure requirements into dependable, repeatable solutions.
             </motion.p>
             <motion.div className="hero-actions" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .6 }}>
-              <a className="button button-primary" href="#projects">Explore my work <ArrowUpRight size={17} /></a>
+              <Magnetic>
+                <a className="button button-primary" href="#projects">Explore my work <ArrowUpRight size={17} /></a>
+              </Magnetic>
               <a className="button button-ghost" href="#contact">Get in touch <Mail size={16} /></a>
             </motion.div>
             <motion.div className="hero-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .8 }}>
@@ -296,13 +433,19 @@ function App() {
           <div className="skills-grid">
             {skills.map((skill, i) => {
               const Icon = skill.icon
-              return <Reveal key={skill.name} delay={i * .045}>
-                <div className="skill-card">
+              return (
+                <motion.div
+                  key={skill.name}
+                  whileHover={{ y: -6 }}
+                  whileTap={{ scale: 0.98 }}
+                  layout
+                  className="skill-card"
+                >
                   <div className="skill-top"><span className="skill-icon"><Icon size={19} /></span><span className="skill-group">{skill.group}</span></div>
                   <h3>{skill.name}</h3><p>{skill.detail}</p>
                   <span className="skill-arrow"><ArrowUpRight size={15} /></span>
-                </div>
-              </Reveal>
+                </motion.div>
+              )
             })}
           </div>
           <div className="capability-row">
@@ -319,19 +462,30 @@ function App() {
             <div className="projects-list">
               {projects.map((project, i) => {
                 const Icon = project.icon
-                return <Reveal key={project.number} delay={i * .06}>
-                  <article className={`project-card project-${project.color}`}>
-                    <div className="project-number">{project.number}</div>
-                    <div className="project-icon"><Icon size={24} /></div>
-                    <div className="project-content">
-                      <span className="project-type">{project.type}</span>
-                      <h3>{project.title}</h3>
-                      <p>{project.description}</p>
-                      <div className="tag-list">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
-                    </div>
-                    <div className="project-mark"><ArrowUpRight size={20} /></div>
-                  </article>
-                </Reveal>
+                return (
+                  <motion.div
+                    key={project.number}
+                    whileHover={{ y: -6 }}
+                    whileTap={{ scale: 0.98 }}
+                    layout
+                    className="project-card-wrapper"
+                  >
+                    <Reveal delay={i * 0.06}>
+                      <article className={`project-card project-${project.color}`}>
+                        <div className="project-glow" />
+                        <div className="project-number">{project.number}</div>
+                        <div className="project-icon"><Icon size={24} /></div>
+                        <div className="project-content">
+                          <span className="project-type">{project.type}</span>
+                          <h3>{project.title}</h3>
+                          <p>{project.description}</p>
+                          <div className="tag-list">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
+                        </div>
+                        <div className="project-mark"><ArrowUpRight size={20} /></div>
+                      </article>
+                    </Reveal>
+                  </motion.div>
+                )
               })}
             </div>
             <div className="project-note"><CheckCircle2 size={16} /> Client and production details are kept confidential. Public code samples can be added here as they become available.</div>
@@ -346,7 +500,11 @@ function App() {
               ['02', 'Design', 'Choose a secure, supportable architecture that fits the environment.'],
               ['03', 'Automate', 'Use version-controlled infrastructure and repeatable deployment workflows.'],
               ['04', 'Validate', 'Test changes, document outcomes and plan for recovery.'],
-            ].map(([n, title, text], i) => <Reveal key={n} delay={i * .07}><div className="approach-step"><span>{n}</span><h3>{title}</h3><p>{text}</p><ChevronRight size={17} /></div></Reveal>)}
+            ].map(([n, title, text], i) => (
+              <motion.div key={n} whileHover={{ y: -4 }} whileTap={{ scale: 0.98 }} layout className="approach-step">
+                <span>{n}</span><h3>{title}</h3><p>{text}</p><ChevronRight size={17} />
+              </motion.div>
+            ))}
           </div>
         </section>
 
@@ -356,7 +514,9 @@ function App() {
               <span className="eyebrow">05 / CONTACT</span>
               <h2>Have a cloud challenge?<br /><span className="gradient-text">Let's build something solid.</span></h2>
               <p>Open to conversations about cloud infrastructure, DevOps, SAP on AWS and automation.</p>
-              <a className="button button-primary contact-button" href={`mailto:${profile.email}`}>Start a conversation <ArrowUpRight size={17} /></a>
+              <Magnetic>
+                <a className="button button-primary contact-button" href={`mailto:${profile.email}`}>Start a conversation <ArrowUpRight size={17} /></a>
+              </Magnetic>
             </Reveal>
             <Reveal className="contact-links" delay={.12}>
               <a href={`mailto:${profile.email}`}><span className="contact-link-icon"><Mail size={18} /></span><span><small>EMAIL</small>{profile.email}</span><ArrowUpRight size={17} /></a>
