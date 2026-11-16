@@ -317,6 +317,8 @@ button { font: inherit; }
 .project-mark { transition: transform .25s, color .25s; }
 .project-card:hover .project-mark { color: #a9bcff; transform: translate(3px, -3px); }
 .contact-actions { display: flex; align-items: center; gap: 17px; flex-wrap: wrap; }
+.whatsapp-number { display: inline-flex; align-items: center; gap: 7px; margin-top: 19px; color: #7cddb9; font: 10px 'DM Mono', monospace; letter-spacing: .04em; }
+.whatsapp-number svg { color: #7cddb9; }
 .copy-email { display: inline-flex; align-items: center; gap: 7px; margin-top: 19px; padding: 12px 0; border: 0; background: transparent; color: #9aa9c7; cursor: pointer; font-size: 11px; transition: color .2s; }
 .copy-email:hover { color: #e7eeff; }
 @media (max-width: 680px) {

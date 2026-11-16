@@ -5,8 +5,8 @@ import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
   Cloud, Server, Workflow, ShieldCheck, Database, Terminal, GitBranch,
   Layers3, Activity, ExternalLink, CheckCircle2, Code2, Cpu, HardDrive,
-  Network, Gauge, ChevronRight, Copy, Check, Sparkles, ArrowRight, Sun, Moon,
-  BookOpen, Send, XCircle
+  Network, Gauge, ChevronRight, Check, Sparkles, ArrowRight, Sun, Moon,
+  BookOpen, Send, XCircle, MessageCircle
 } from 'lucide-react'
 import './styles.css'
 
@@ -15,6 +15,7 @@ const profile = {
   title: 'Senior Software Engineer | Cloud & DevOps',
   tagline: 'AWS  /  AUTOMATION  /  RELIABILITY',
   email: 'akshayhv@hotmail.com',
+  whatsapp: '916366521166',
   github: 'https://github.com/hvakshay93',
   linkedin: 'https://www.linkedin.com/in/akshay-ranganath-h-v-619a671a4',
 }
@@ -288,23 +289,12 @@ function App() {
   const [scrolled, setScrolled] = React.useState(false)
   const [activeSection, setActiveSection] = React.useState('home')
   const [skillFilter, setSkillFilter] = React.useState('All')
-  const [emailCopied, setEmailCopied] = React.useState(false)
   const [selectedProject, setSelectedProject] = React.useState(null)
   const [theme, setTheme] = React.useState(() => window.localStorage.getItem('portfolio-theme') || 'dark')
   const closeMenu = () => setMenuOpen(false)
   const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Experience', '#experience'], ['Notes', '#notes'], ['Contact', '#contact']]
   const skillGroups = ['All', 'Cloud', 'Automation', 'Platforms', 'Reliability']
   const visibleSkills = skillFilter === 'All' ? skills : skills.filter(skill => skill.group === skillFilter)
-
-  const copyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(profile.email)
-      setEmailCopied(true)
-      window.setTimeout(() => setEmailCopied(false), 2200)
-    } catch {
-      window.location.href = `mailto:${profile.email}`
-    }
-  }
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -315,9 +305,8 @@ function App() {
   const submitContact = event => {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
-    const subject = encodeURIComponent(`Portfolio enquiry from ${form.get('name')}`)
-    const body = encodeURIComponent(`Name: ${form.get('name')}\nEmail: ${form.get('email')}\n\n${form.get('message')}`)
-    window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`
+    const message = encodeURIComponent(`Hello Akshay,\n\nName: ${form.get('name')}\nEmail: ${form.get('email')}\n\n${form.get('message')}`)
+    window.open(`https://wa.me/${profile.whatsapp}?text=${message}`, '_blank', 'noopener,noreferrer')
   }
 
   React.useEffect(() => {
@@ -518,21 +507,21 @@ function App() {
               <h2>Have a cloud challenge?<br /><span className="gradient-text">Let's build something solid.</span></h2>
               <p>Open to conversations about cloud infrastructure, DevOps, SAP on AWS and automation.</p>
               <div className="contact-actions">
-                <a className="button button-primary contact-button" href={`mailto:${profile.email}`}>Start a conversation <ArrowUpRight size={17} /></a>
-                <button className="copy-email" type="button" onClick={copyEmail}>{emailCopied ? <Check size={15} /> : <Copy size={15} />} {emailCopied ? 'Email copied' : 'Copy email'}</button>
+                <a className="button button-primary contact-button" href={`https://wa.me/${profile.whatsapp}?text=Hello%20Akshay%2C%20I%27d%20like%20to%20discuss%20a%20cloud%20opportunity.`} target="_blank" rel="noreferrer"><MessageCircle size={17} /> Message on WhatsApp</a>
+                <span className="whatsapp-number"><MessageCircle size={14} /> +91 6366521166</span>
               </div>
             </Reveal>
             <Reveal className="contact-links" delay={.12}>
-              <a href={`mailto:${profile.email}`}><span className="contact-link-icon"><Mail size={18} /></span><span><small>EMAIL</small>{profile.email}</span><ArrowUpRight size={17} /></a>
+              <a href={`https://wa.me/${profile.whatsapp}`} target="_blank" rel="noreferrer"><span className="contact-link-icon"><MessageCircle size={18} /></span><span><small>WHATSAPP</small>+91 6366521166</span><ArrowUpRight size={17} /></a>
               <a href={profile.linkedin} target="_blank" rel="noreferrer"><span className="contact-link-icon"><Linkedin size={18} /></span><span><small>LINKEDIN</small>Connect professionally</span><ArrowUpRight size={17} /></a>
               <a href={profile.github} target="_blank" rel="noreferrer"><span className="contact-link-icon"><Github size={18} /></span><span><small>GITHUB</small>@hvakshay93</span><ArrowUpRight size={17} /></a>
             </Reveal>
           </div>
           <form className="contact-form section-wrap" onSubmit={submitContact}>
-            <div className="form-heading"><Send size={16} /><span>OR SEND A QUICK NOTE</span></div>
+            <div className="form-heading"><Send size={16} /><span>SEND A QUICK NOTE ON WHATSAPP</span></div>
             <div className="form-grid"><label>Name<input required name="name" placeholder="Your name" /></label><label>Email<input required type="email" name="email" placeholder="you@example.com" /></label></div>
             <label>Message<textarea required name="message" rows="4" placeholder="Tell me what you are working on..." /></label>
-            <button className="button button-primary" type="submit">Open email draft <ArrowUpRight size={17} /></button>
+            <button className="button button-primary" type="submit"><MessageCircle size={17} /> Continue on WhatsApp <ArrowUpRight size={17} /></button>
           </form>
         </section>
       </main>
