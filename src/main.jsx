@@ -9,6 +9,7 @@ import {
   BookOpen, Send, XCircle, MessageCircle
 } from 'lucide-react'
 import './styles.css'
+import { startSwarm } from './features/swarm.js'
 
 const profile = {
   name: 'Akshay Ranganath H V',
@@ -295,6 +296,7 @@ function App() {
   const nav = [['About', '#about'], ['Expertise', '#expertise'], ['Projects', '#projects'], ['Experience', '#experience'], ['Notes', '#notes'], ['Contact', '#contact']]
   const skillGroups = ['All', 'Cloud', 'Automation', 'Platforms', 'Reliability']
   const visibleSkills = skillFilter === 'All' ? skills : skills.filter(skill => skill.group === skillFilter)
+  const launchSwarm = () => startSwarm()
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -368,6 +370,7 @@ function App() {
               <a className="button button-primary" href="#projects">Explore my work <ArrowUpRight size={17} /></a>
               <a className="button button-ghost" href="#contact">Get in touch <Mail size={16} /></a>
               <a className="button button-ghost button-cv" href={`${import.meta.env.BASE_URL}Akshay-Ranganath-HV-CV.pdf`} download>Download CV <ArrowDown size={16} /></a>
+              <button className="button button-ghost swarm-launch-button" type="button" onClick={launchSwarm}><Workflow size={16} /> Rebuild this portfolio</button>
             </motion.div>
             <motion.div className="hero-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .8 }}>
               <span><MapPin size={14} /> India</span>
