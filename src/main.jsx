@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import {
   motion,
   useSpring,
+  useMotionValue,
 } from 'framer-motion'
 import {
   ArrowDown, ArrowUpRight, Github, Linkedin, Mail, MapPin, Menu, X,
